@@ -26,3 +26,8 @@ Run these in Copilot Chat (Agent mode), in this order. Before each one, check th
 If time is short before the call, run just 1 and 4, and use the numbers in the call plan PDF.
 
 If a step fails, paste the error here, or ask Copilot: “Read the errors.csv next to the output and tell me which PAT scope is missing.”
+
+
+***********************************************
+
+Analyze the two cloned ADO repos in C:\repos\mix\ado-clones (Terraform modules repo and pipelines repo) from dev.azure.com/AnalyticsDataHub/Platform. Read files only; do not push or change anything. Produce docs/migration/status/two-repo-analysis.md with: (1) every Terraform module folder, its last version in the module manifest, and its last-change commit; (2) the manifest file format and how the pipelines download module artifacts (feed name, package name, version variable); (3) each application’s tfvars and which module versions it pins; (4) all pipelines, stages, environments, variable groups and service connections referenced; (5) a table to move each module to its own repo ADHPlatform/tf-<module> with tag v<current version>, plus the git filter-repo, git tag and git push commands for each; (6) the before/after manifest change from an artifact version to source = “git::https://cencora.ghe.com/ADHPlatform/tf-<module>.git?ref=vX.Y.Z” for one app; (7) a release-please workflow and starter CHANGELOG.md for one module; (8) a list of the service connections, each mapped to an OIDC federated credential, with the subject claim. Mark anything you can’t find as TBD.
