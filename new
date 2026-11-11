@@ -8,3 +8,21 @@ Quick version: in the terminal, run $env:ADO_PAT = Read-Host 'Paste ADO PAT' fir
 Then paste this one prompt to get a single plan for the call:
 
 Using the outputs from /check-my-access, /artifacts-inventory and /ado-snapshot for dev.azure.com/AnalyticsDataHub/Platform, write docs/migration/status/call-plan.md with 4 sections: (1) Artifacts: each feed and package type, target (GitHub Packages, tags/releases, or stay in Azure Artifacts), steps. (2) Service connections: each one, what it maps to in GitHub (OIDC federated credential, secret or variable), who must create it. (3) Access: what I have vs need, and the request to the org owner. (4) Modules: recommend one repo per module with semver tags (v1.0.0), the git tag commands, and how consumers pin versions. Use only real data from the outputs and mark anything unknown as TBD.
+
+
+
+Run these in Copilot Chat (Agent mode), in this order. Before each one, check that the terminal has $env:ADO_PAT set; if you open a new terminal, set it again.
+
+0. Only if you haven’t re-run the setup since downloading the new zips: in C:\repos\mix\ADO-GIT, run .\Setup-AdoGitWorkspace.ps1, then Ctrl+Shift+P > Reload Window.
+
+1. /check-my-access (about 5 minutes). It finds out what you can and can’t do in GitHub and ADO, and drafts the access email to the org owner. If it asks to run gh commands, click Continue.
+
+2. /ado-snapshot (about 5 to 15 minutes; this is the slow one). It reads AnalyticsDataHub/Platform and gives you real counts of repos, branches, PRs, pipelines, service connections and feeds.
+
+3. /effort-estimate (about 2 minutes). It updates the person-days from those counts. When it asks for team size, answer “4 people at 80%”.
+
+4. /plan-chart (about 1 minute). It makes the timeline chart for the call.
+
+If time is short before the call, run just 1 and 4, and use the numbers in the call plan PDF.
+
+If a step fails, paste the error here, or ask Copilot: “Read the errors.csv next to the output and tell me which PAT scope is missing.”
