@@ -1,0 +1,10 @@
+Quick version: in the terminal, run $env:ADO_PAT = Read-Host 'Paste ADO PAT' first. Then run these in Copilot Chat (Agent mode):
+
+/check-my-access lists your access and drafts the access request.
+/artifacts-inventory reads all Platform feeds, packages and versions using your PAT.
+/artifacts-plan writes the plan for where each package goes.
+/ado-snapshot lists the service connections, along with repos, branches, PRs and pipelines.
+
+Then paste this one prompt to get a single plan for the call:
+
+Using the outputs from /check-my-access, /artifacts-inventory and /ado-snapshot for dev.azure.com/AnalyticsDataHub/Platform, write docs/migration/status/call-plan.md with 4 sections: (1) Artifacts: each feed and package type, target (GitHub Packages, tags/releases, or stay in Azure Artifacts), steps. (2) Service connections: each one, what it maps to in GitHub (OIDC federated credential, secret or variable), who must create it. (3) Access: what I have vs need, and the request to the org owner. (4) Modules: recommend one repo per module with semver tags (v1.0.0), the git tag commands, and how consumers pin versions. Use only real data from the outputs and mark anything unknown as TBD.
