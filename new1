@@ -1,0 +1,81 @@
+Paste the prompt below into Copilot agent mode in a new chat, opened on the target GitHub repo with the other repo cloned alongside it. It is written to keep token use down: it reads git state instead of the whole codebase, works one phase at a time, and records progress in a file so a fresh chat can resume.
+
+I’ve assumed the pipeline is moving to GitHub Actions (that is where OIDC normally comes in) and that “tags instead of artifacts” means the Terraform module is versioned and consumed by Git tag, not as a published artifact. Change the prompt if either is wrong.
+
+Fill these in first
+Placeholder	Meaning
+<SPN_MODULE_PATH>	Folder of the SPN module in the target repo, e.g. modules/spn
+<OTHER_REPO_PATH>	Local path of the repo that holds the remaining files and tfvars
+<OTHER_REPO_SPN_PATHS>	Folders or files in that repo that belong to SPN
+<ENVS>	Environments, e.g. dev, qa, prod
+<OLD_VERSIONS>	Artifact versions to recreate as tags, e.g. 1.0.0, 1.1.0 (with commit SHAs if known)
+Prompt for Copilot
+text
+You are finishing a migration of the Terraform SPN module from Azure DevOps to this GitHub repo.
+Work only on the SPN module. Do not touch other modules.
+
+RULES (to limit token use)
+- Do not scan the whole workspace. Read only: <SPN_MODULE_PATH>, .github/workflows,
+  and <OTHER_REPO_SPN_PATHS> inside <OTHER_REPO_PATH>.
+- Use quiet commands (git -q, terraform -no-color) and pipe long output to a log file;
+  show me only the last 20 lines on failure.
+- Do one phase at a time. After each phase, update MIGRATION_STATUS.md and stop for my OK.
+- Never commit secrets, client secrets, PATs or state files. If a tfvars file contains
+  a secret, list it for me and replace it with a variable reference.
+- Do not run git push, terraform apply or create tags without asking me first.
+
+PHASE 0 - Find out what is already done
+- Run: git status -sb, git log --oneline -15, git tag --list, ls of <SPN_MODULE_PATH>
+  and .github/workflows.
+- Read MIGRATION_STATUS.md if it exists.
+- Write/update MIGRATION_STATUS.md with a checklist: files migrated, tfvars, pipeline,
+  OIDC, tags. Mark each as done / partial / missing. Keep it under 40 lines.
+
+PHASE 1 - Complete the SPN module files
+- Compare <SPN_MODULE_PATH> with <OTHER_REPO_SPN_PATHS> in <OTHER_REPO_PATH>.
+- Copy every missing SPN file (.tf, .tfvars, templates, scripts, README) keeping the
+  folder layout. Put tfvars under <SPN_MODULE_PATH>/env/<env>.tfvars for: <ENVS>.
+- Fix relative paths and module source references broken by the move.
+- Run terraform fmt -recursive and terraform validate (init with -backend=false).
+
+PHASE 2 - Tags instead of artifacts
+- Find every place the SPN module is consumed from an ADO artifact/package feed and
+  replace it with a Git source pinned to a tag:
+  source = "git::https://github.com/<org>/<repo>.git//<SPN_MODULE_PATH>?ref=spn/v<version>"
+- Remove pipeline steps that publish or download the module as an artifact.
+- Prepare (do not run) the git tag commands for these versions: <OLD_VERSIONS>,
+  using the format spn/v<version>. Show me the commands.
+
+PHASE 3 - Pipeline with OIDC
+- Create .github/workflows/spn-terraform.yml:
+  - triggers: pull_request and push to main, path filter on <SPN_MODULE_PATH>/**;
+    plus workflow_dispatch with an environment input (<ENVS>).
+  - permissions: id-token: write, contents: read, pull-requests: write.
+  - login with azure/login using client-id, tenant-id, subscription-id from
+    repo/environment variables (no client secret).
+  - set ARM_USE_OIDC=true, ARM_CLIENT_ID, ARM_TENANT_ID, ARM_SUBSCRIPTION_ID for Terraform.
+  - jobs: fmt + validate + plan on PR (-var-file=env/<env>.tfvars);
+    apply on main behind a GitHub environment approval.
+  - a release job that creates tag spn/v<version> on workflow_dispatch instead of
+    publishing an artifact.
+- Convert any logic from the old azure-pipelines YAML for SPN that is not covered above.
+  List anything you could not convert.
+
+PHASE 4 - Wrap up
+- Update MIGRATION_STATUS.md with what is done and a short list of manual steps
+  left for me (federated credential, GitHub variables, environment approvers, push tags).
+- Show a git diff --stat summary only.
+What Copilot cannot do for you
+Federated credential: the Entra app used for deployments needs a federated credential that trusts this repo, one per environment or branch. That needs rights on the app registration:
+bash
+az ad app federated-credential create --id <appObjectId> --parameters '{
+  "name": "github-spn-prod",
+  "issuer": "https://token.actions.githubusercontent.com",
+  "subject": "repo:<org>/<repo>:environment:prod",
+  "audiences": ["api://AzureADTokenExchange"]
+}'
+GitHub variables: add AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID as repo or environment variables.
+Environments: create the GitHub environments and set approvers for apply.
+Directory permissions: an SPN module creates app registrations, so the deploying identity needs Graph or Entra permissions (for example Application.ReadWrite.OwnedBy), not just an Azure role. Confirm the old ADO service connection’s identity had these and grant the same to the new one.
+
+If a chat gets long, start a new one and say “Read MIGRATION_STATUS.md and continue from the next unfinished phase”. That avoids paying for the old history again.
