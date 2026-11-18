@@ -1,3 +1,26 @@
 cd C:\repos\mix\ADO-GIT\spn-migration
 .\Invoke-SpnMigration.ps1 -Phase oidc -Force
 .\Invoke-SpnMigration.ps1 -Phase push -Force   # type PUSH
+
+---------------------------------------------------------------
+
+1. Check the push.
+
+.\Invoke-SpnMigration.ps1 -Status
+git ls-remote --tags https://cencora.ghe.com/ADHPlatform/SPN.git
+
+Every phase should show done, with tags v0.0.1 to v0.0.4.
+
+2. Merge PR 1 on SPN. That adds the changelog and the Module CI and Module Release workflows.
+
+3. Set up OIDC, which needs the Entra admin. Send them the 4 out\fic-*.json files and out\oidc-setup.md. They add these as federated credentials on the existing SPN app registration. No secret is involved.
+
+4. Set up the environment in GitHub. In the deploy repo, open Settings > Environments and create nonprod with AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID. out\github-setup.ps1 can do this for you if your role allows it.
+
+5. Test in the Actions tab, in this order:
+
+runner-test checks the Cencora runner and needs no Azure.
+oidc-test works once step 3 is done.
+5- Service Principal - Utility Pipeline: run it with custodian SBX, NonProd, Sub Group NA and runner CencoraShared. The plan should show “No changes”.
+
+If state storage blocks the run, ask for 52.242.194.21 to be allowed on it.
