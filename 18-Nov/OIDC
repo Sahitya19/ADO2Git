@@ -1,0 +1,10 @@
+>> Go to portal.azure.com, then Microsoft Entra ID > App registrations > All applications.
+>> Search for the app by its client ID (from the SBX_NonProd service connection) and open it.
+>> Open Certificates & secrets, then the Federated credentials tab, and click + Add credential.
+>> Under Federated credential scenario, choose Other issuer.
+>> Fill in the fields, copying them exactly from fic-NonProd.json:
+>> Issuer: for GHE.com this is normally https://token.actions.cencora.ghe.com
+>> Subject identifier (it’s an explicit value): repo:ADHPlatform/Custodian_Infrastructure_Deployment_Terraform:environment:nonprod
+        Name: github-nonprod
+        Audience: api://AzureADTokenExchange (the default, so leave it)
+        Click Add.
