@@ -11,3 +11,32 @@ cd C:\repos\mix\ADO-GIT\spn-migration
 On SPN, it adds the changelog and the Module CI and Module Release workflows, removes the leftover files and opens the PR. It then rebuilds “5- Service Principal - Utility Pipeline” with Sub Group and the runner choice, and waits for you to type PUSH.
 
 If you’d rather have Copilot run it, use Agent mode with only the terminal tool and paste: Run .\tools\Fix-SpnRepos.ps1 in C:\repos\mix\ADO-GIT\spn-migration. When it asks, stop and tell me. If a command fails, show only the failing line and the fix. Do not read other files.
+**************************************************
+
+
+Here’s the whole sequence on the VDI. You only need to copy in one file, spn-migration.zip, and the script places everything else.
+
+1. Put the zip in place. Save the attached spn-migration.zip to C:\repos\mix\ADO-GIT\, then run:
+
+cd C:\repos\mix\ADO-GIT
+Expand-Archive .\spn-migration.zip -DestinationPath $env:TEMP\kitnew -Force
+robocopy $env:TEMP\kitnew\spn-migration .\spn-migration /E /XF spn-migration.config.psd1 /XD out
+
+This updates the kit and keeps your config and out\ folder.
+
+2. Open C:\repos\mix\ADO-GIT\spn-migration in VS Code.
+
+3. Run the fix. Use the terminal, or Copilot Agent mode with only the terminal tool:
+
+.\tools\Fix-SpnRepos.ps1
+
+Type PUSH when it asks.
+
+Where the files end up:
+
+ADHPlatform/SPN, through a PR: CHANGELOG.md and .github/workflows/module-ci.yml and module-release.yml. spn-validation.yml and scripts/ are removed.
+Deploy repo: .github/workflows/ServicePrincipal.yml (“5- Service Principal - Utility Pipeline”), oidc-test.yml, runner-test.yml, .github/actions/terraform-prepare/, Deployments/SPN/ and CoreInfra/SBX/NonProd/ (SPN.tfvars and modules_manifest.csv).
+
+4. In the browser: merge the SPN PR. Then create the nonprod environment with AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID, and run the workflow with custodian SBX, NonProd and the CencoraShared runner.
+
+If a step fails, send me the error line.
