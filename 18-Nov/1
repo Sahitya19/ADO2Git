@@ -1,1 +1,13 @@
 
+Yes, you can have both, and there’s nothing to set up. Cencora’s docs say the cencora VNET runners and the standard ubuntu-latest runners are both open to every repo in the enterprise. The workflow picks one per job, and the SPN workflow already has a runner choice. Plan and apply need the cencora runners to reach the firewalled state. Format and validate can use the cheaper ubuntu-latest.
+
+I’m adding the billing slide. Standard runners use the included free minutes, while cencora runners bill from the first minute at a higher rate. I’m also preparing the Copilot steps to fix the SPN module.
+
+The SPN fix is now a single script, so Copilot doesn’t need to write anything. First copy in the new kit with the same robocopy command as before (it keeps your config), then run:
+
+cd C:\repos\mix\ADO-GIT\spn-migration
+.\tools\Fix-SpnRepos.ps1
+
+On SPN, it adds the changelog and the Module CI and Module Release workflows, removes the leftover files and opens the PR. It then rebuilds “5- Service Principal - Utility Pipeline” with Sub Group and the runner choice, and waits for you to type PUSH.
+
+If you’d rather have Copilot run it, use Agent mode with only the terminal tool and paste: Run .\tools\Fix-SpnRepos.ps1 in C:\repos\mix\ADO-GIT\spn-migration. When it asks, stop and tell me. If a command fails, show only the failing line and the fix. Do not read other files.
