@@ -2,3 +2,19 @@
 
 
 
+This is the right file. It has one row per custodian and environment with the state resource group, storage account and subscription. The workflows will read that row from your Custodian and Prod/NonProd choice, the same way ADO does. Then the only setting left in GitHub is the app’s client ID and tenant.
+The workflows no longer ask for anything when they run. They read the SBX,NonProd row from terraform.backend_config.csv for the subscription, state resource group and storage account, just like ADO. terraform.common.csv is never copied, so the Astronomer token stays out of GitHub.
+On the VDI: copy the new kit over spn-migration the same way as before, keeping out\, then run:
+foreach ($p in 'deploycopy','convert','workflow','oidc') { .\Invoke-SpnMigration.ps1 -Phase $p -Force }
+.\Invoke-SpnMigration.ps1 -Phase push -Force   # type PUSH; updates PR #1
+Cancel the 3 old runner-test runs.
+Needs you
+
+* What is the state container name that ADO uses (for example tfstate)? It’s not in the CSV, so it goes in as one variable.
+* Yellow runs: open run #3. If only the cencora-vnet job is waiting, the org owner needs to give this repo access to the cencora runner group.
+
+ZIP FILE?
+Here’s the latest zip. Save it to C:\repos\mix\ADO-GIT\, then run:
+cd C:\repos\mix\ADO-GIT
+Expand-Archive .\spn-migration.zip -DestinationPath $env:TEMP\kitnew -Force
+robocopy $env:TEMP\kitnew\spn-migration .\spn-migration /E /XF spn-migration.config.psd1 *.pdf /XD out /R:1 /W:1
