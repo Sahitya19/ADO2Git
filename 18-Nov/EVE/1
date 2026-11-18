@@ -18,3 +18,10 @@ Here’s the latest zip. Save it to C:\repos\mix\ADO-GIT\, then run:
 cd C:\repos\mix\ADO-GIT
 Expand-Archive .\spn-migration.zip -DestinationPath $env:TEMP\kitnew -Force
 robocopy $env:TEMP\kitnew\spn-migration .\spn-migration /E /XF spn-migration.config.psd1 *.pdf /XD out /R:1 /W:1
+
+
+------------
+
+cd C:\repos\mix\ADO-GIT\spn-migration
+foreach ($p in 'deploycopy','convert','workflow','oidc') { .\Invoke-SpnMigration.ps1 -Phase $p -Force }
+.\Invoke-SpnMigration.ps1 -Phase push -Force
