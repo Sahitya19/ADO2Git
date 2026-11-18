@@ -28,4 +28,10 @@ foreach ($p in 'deploycopy','convert','workflow','oidc') { .\Invoke-SpnMigration
 
 
 git -C ..\spn-work\SPN pull --rebase origin main
-.\Invoke-SpnMigration.ps1 -Phase push -Force    # type PUSH
+
+
+--------------------------
+
+cd C:\repos\mix\ADO-GIT\spn-migration
+foreach ($p in 'deploycopy','convert','workflow') { .\Invoke-SpnMigration.ps1 -Phase $p -Force }
+.\Invoke-SpnMigration.ps1 -Phase push -Force   # type PUSH
