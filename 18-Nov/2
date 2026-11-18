@@ -1,0 +1,3 @@
+cd C:\repos\mix\ADO-GIT\spn-migration
+.\Invoke-SpnMigration.ps1 -Phase oidc -Force
+.\Invoke-SpnMigration.ps1 -Phase push -Force   # type PUSH
