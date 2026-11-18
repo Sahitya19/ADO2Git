@@ -25,3 +25,7 @@ robocopy $env:TEMP\kitnew\spn-migration .\spn-migration /E /XF spn-migration.con
 cd C:\repos\mix\ADO-GIT\spn-migration
 foreach ($p in 'deploycopy','convert','workflow','oidc') { .\Invoke-SpnMigration.ps1 -Phase $p -Force }
 .\Invoke-SpnMigration.ps1 -Phase push -Force
+
+
+git -C ..\spn-work\SPN pull --rebase origin main
+.\Invoke-SpnMigration.ps1 -Phase push -Force    # type PUSH
