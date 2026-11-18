@@ -1,0 +1,24 @@
+I’m looking into the folder structure now. A screenshot of the SPN repo’s file list on GitHub would help me pinpoint what’s wrong faster.
+
+Until you type PUSH, nothing goes to GitHub, so this is all fixable locally. Please run these and send me the output, or a photo of it:
+
+cd C:\repos\mix\ADO-GIT\spn-work\SPN
+git log --oneline -3 ; git ls-tree -r --name-only HEAD | Select-Object -First 40
+cd ..\deploy-Custodian_Infrastructure_Deployment_Terraform
+git status --short ; git ls-files
+
+Expected layout: the SPN repo has the module files at its root (main.tf, variables.tf and so on, plus CHANGELOG.md and .github/workflows), with no Modules/ folder inside. The deploy repo has .github/workflows, Deployments/SPN and CoreInfra/<custodian>/<env>/SPN.tfvars plus modules_manifest.csv.
+
+Common causes:
+
+Every custodian was copied. For the demo, set PipelinesInclude = @('CoreInfra/SBX/*/SPN.tfvars') and rerun deploycopy, convert, workflow and oidc with -Force.
+Extra folders came from the earlier Copilot push. Remove them in a normal PR.
+Files are nested too deep, under Modules/SPN. Your output will show it, and I’ll send you the exact fix.
+
+The deck now covers the whole platform. Slide 1 is the full migration, slide 2 is “Where we are now” with SSO marked done, slide 3 is your roadmap, and SPN appears only as the pilot example.
+
+Slide 2 still shows “N” where the module counts go. To fill them in, open Copilot in Ask mode in C:\repos\mix\ADO-GIT and paste this:
+
+List as a table, one row per module: module name (each folder under Modules/ in Modernization_Terraform), whether it is cloned locally as its own repo, whether it has a GitHub remote under ADHPlatform, and its git tags. Then list every pipeline YAML (.azure-pipelines/Pipeline.*.yaml and any *Publish* pipeline) with the module it deploys. End with totals: modules, cloned, pushed, tagged.
+
+Also run gh repo list ADHPlatform --limit 200, then paste both outputs here.
